@@ -1,3 +1,7 @@
+# Platon
+Please check out the project!
+https://github.com/oschwengers/platon
+
 ## Build Docker image
 docker build --no-cache -t collingswortht/platon_app -f Dockerfile-platon-app .
 
