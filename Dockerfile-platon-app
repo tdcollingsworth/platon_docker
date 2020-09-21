@@ -1,0 +1,93 @@
+### os
+FROM debian:stretch-slim
+ENV DEBIAN_FRONTEND noninteractive
+ENV DEBIAN_FRONTEND Teletype
+
+### apt
+RUN apt-get update && \
+  apt-get install -y --no-install-recommends --fix-missing \
+  build-essential \
+  git \
+  perl \
+  libz-dev \
+  python3 \
+  python3-pip \
+  python3-setuptools \
+  wget
+
+
+### pip
+RUN pip3 install -U \
+#  biopython \
+  biopython==1.73 \
+  boto3 \
+#  cgecore==1.5.5 \
+  pandas \
+#  tabulate==0.7.7 \
+  utils
+
+
+### Add, download, install programs
+
+RUN mkdir /TOOLS
+
+
+## wget
+
+# db
+RUN wget https://zenodo.org/record/3924529/files/db.tar.gz \
+  && mkdir /TOOLS/platon_db \
+  && tar -xzvf db.tar.gz -C /TOOLS/platon_db --strip-components 1 \
+  && rm /db.tar.gz
+
+# diamond
+RUN wget http://github.com/bbuchfink/diamond/releases/download/v2.0.4/diamond-linux64.tar.gz \
+  && mkdir /TOOLS/diamond \
+  && tar -xzvf diamond-linux64.tar.gz -C /TOOLS/diamond \
+  && rm /diamond-linux64.tar.gz
+ENV PATH "$PATH:/TOOLS/diamond"
+
+# hmmer
+RUN wget http://eddylab.org/software/hmmer/hmmer.tar.gz \
+  && mkdir /TOOLS/hmmer \
+  && tar -zxvf hmmer.tar.gz -C /TOOLS/hmmer --strip-components 1 \
+  && cd /TOOLS/hmmer/ && ./configure --prefix /TOOLS/hmmer && make && make install \
+  && rm /hmmer.tar.gz
+
+# mummer
+RUN wget https://github.com/mummer4/mummer/releases/download/v4.0.0beta2/mummer-4.0.0beta2.tar.gz \
+  && mkdir /TOOLS/mummer \
+  && tar -zxvf mummer-4.0.0beta2.tar.gz -C /TOOLS/mummer --strip-components 1 \
+  && cd /TOOLS/mummer/ && ./configure --prefix /TOOLS/hmmer && make && make install \
+  && rm /mummer-4.0.0beta2.tar.gz
+
+# ncbi
+RUN wget https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.10.1/ncbi-blast-2.10.1+-x64-linux.tar.gz \
+  && mkdir /TOOLS/ncbi-blast \
+  && tar -xzvf ncbi-blast-2.10.1+-x64-linux.tar.gz -C /TOOLS/ncbi-blast --strip-components 1 \
+  && rm /ncbi-blast-2.10.1+-x64-linux.tar.gz
+ENV PATH "$PATH:/TOOLS/ncbi-blast/bin"
+
+
+## git clone
+
+# prodigal
+RUN git clone https://github.com/hyattpd/Prodigal.git /TOOLS/prodigal \
+  && cd /TOOLS/prodigal/ && make install
+
+# platon
+RUN git clone https://github.com/oschwengers/platon.git /TOOLS/platon \
+  && cd /TOOLS/platon/ && python3 -m pip install .
+
+
+## local
+ADD controller.py /TOOLS/
+
+
+### Setup directory structure
+RUN mkdir /WORKSPACE
+WORKDIR /WORKSPACE
+
+
+## Define entry point
+#ENTRYPOINT ["python3", "/TOOLS/controller.py"]
