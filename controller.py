@@ -26,17 +26,16 @@ def runplaton(isolate):
     '''Docstring description of the function.
     '''
 
-#    columns = ['Rep3',
-#               'NT_Rep',
-#               'RepA_N',
-#               'Rep_trans',
-#               'Inc18',
-#               'Rep1',
-#               'RepL',
-#               'Rep2',
-#               'Enterobacteriaceae']
+    columns = ['id',
+               'inc_types',
+               'plasmid_hits',
+               'conjugation_hits',
+               'mobilization_hits',
+               'replication_hits',
+               'amr_hits',
+               'is_circular']
 
-#    PDF = pandas.DataFrame(columns=columns)
+    PDF = pandas.DataFrame(columns=columns)
 
     if os.path.isfile(isolate+'_contigs.fasta'):
 
@@ -45,8 +44,8 @@ def runplaton(isolate):
             [
                 '/TOOLS/platon/bin/platon'+\
                 ' --db /TOOLS/platon_db'+\
-#                ' --mode sensitivity'+\
                 ' --prefix '+isolate+\
+                ' --threads 8'+\
                 ' '+isolate+'_contigs.fasta'
             ],
             stdout=subprocess.PIPE,
@@ -57,57 +56,87 @@ def runplaton(isolate):
             error = utils.format_std_string(p.stderr)
             logger.error(error)
 
-#    else:
+    else:
 
-#        PSeries = pandas.Series(data=['Assembly not available.'],
-#                                 index=columns,
-#                                 name=isolate)
+        PSeries = pandas.Series(data=['Assembly not available.'],
+                                 index=columns,
+                                 name=isolate)
 
-#        PDF = PDF.append(PSeries)
+        PDF = PDF.append(PSeries)
 
     if os.path.isfile('/WORKSPACE/'+isolate+'.json'):
 
-#        PSeries = pandas.Series(index=columns,
-#                                 name=isolate)
-
-        with open('/WORKSPACE/'++'.json') as f:
+        with open('/WORKSPACE/'+isolate+'.json') as f:
             data = json.load(f)
 
-        print(json.dumps(data, indent=4, sort_keys=True))
+        for result,details in data.items():
 
-#        gramPos = data['plasmidfinder']['results']['Gram Positive']
+            PSeries = pandas.Series(index=columns,
+                                    name=isolate)
 
-#        for k, v in gramPos.items():
-#            if v != 'No hit found':
-#                gramPosList = []
-#                for ke, va in v.items():
-#                    gramPosListList.append(ke)
-#                PSeries[k] = (' ').join(gramPosList)
-#            else:
-#                PSeries[k] = 'No hit found.'
+            PSeries['id']  = details['id']
 
-#        entero = data['plasmidfinder']['results']['Enterobacteriaceae']['enterobacteriaceae']
+            PSeries['is_circular'] = details['is_circular']
 
-#        if entero != 'No hit found':
-#            enteroList = []
-#            for k, v in entero.items():
-#                enteroList.append(k)
-#            PSeries['Enterobacteriaceae'] = (' ').join(enteroList)
-#        else:
-#            PSeries['Enterobacteriaceae'] = 'No hit found.'
+            for key,value in details.items():
 
-#        PDF = PDF.append(PSeries)
+                incTypes = []
 
-#    else:
+                if key == 'inc_types':
+                    for v in value:
+                        incTypes.append(v['type'])
 
-#        PSeries = pandas.Series(data=['Results not available.'],
-#                                 index=columns,
-#                                 name=isolate)
+                if incTypes:
+                    PSeries['inc_types'] = (' ').join(incTypes)
 
-#        PDF = PDF.append(PSeries)
 
-    return None
-#    return PDF
+                plasmidHits = []
+
+                if key == 'plasmid_hits':
+                    for v in value:
+                        plasmidHits.append(v['plasmid']['id'])
+                
+                if plasmidHits:
+                    PSeries['plasmid_hits'] = (' ').join(plasmidHits)
+
+                conjugationHits = []
+
+                if key == 'conjugation_hits':
+                    for v in value:
+                        conjugationHits.append(v['type'])
+
+                if conjugationHits:
+                    PSeries['conjugation_hits'] = (' ').join(conjugationHits)
+
+                mobilizationHits = []
+
+                if key == 'mobilization_hits':
+                    for v in value:
+                         mobilizationHits.append(v['type'])
+                    PSeries['mobilization_hits'] = (' ').join(mobilizationHits)
+
+                replicationHits = []
+
+                if key == 'replication_hits':
+                    for v in value:
+                        replicationHits.append(v['type'])
+
+                if replicationHits:
+                    PSeries['replication_hits'] = (' ').join(replicationHits)
+
+                amrHits = []
+
+                if key == 'amr_hits':
+                    for v in value:
+                        amrHits.append(v['type'])
+
+                if amrHits:
+                    PSeries['amr_hits'] = (' ').join(amrHits)
+
+
+            PDF = PDF.append(PSeries)
+
+    return PDF
 
 def getFiles(fileType,isolate,outFolder):
     """Docstring description of the function.
@@ -228,10 +257,10 @@ def main():
 
     PDF = runplaton(parseArgs.isolate)
 
-#    output = StringIO()
-#    PDF.to_csv(output,index_label='Isolate')
-#    output.seek(0)
-#    print(output.read())
+    output = StringIO()
+    PDF.to_csv(output,index_label='Isolate')
+    output.seek(0)
+    print(output.read())
 
 #==============================================================================
 

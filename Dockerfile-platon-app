@@ -18,12 +18,9 @@ RUN apt-get update && \
 
 ### pip
 RUN pip3 install -U \
-#  biopython \
   biopython==1.73 \
   boto3 \
-#  cgecore==1.5.5 \
   pandas \
-#  tabulate==0.7.7 \
   utils
 
 
@@ -90,4 +87,4 @@ WORKDIR /WORKSPACE
 
 
 ## Define entry point
-#ENTRYPOINT ["python3", "/TOOLS/controller.py"]
+ENTRYPOINT ["python3", "/TOOLS/controller.py"]
