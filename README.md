@@ -1,3 +1,5 @@
+⚠️ For demonstration purposes only, requires access to private data (AWS) to run
+
 # Platon
 Please check out the project!
 
