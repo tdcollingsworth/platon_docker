@@ -1,4 +1,4 @@
-⚠️ For demonstration purposes only, requires access to private data (AWS) to run
+⚠️ For demonstration purposes only, requires access to proprietary data
 
 # Platon
 Please check out the project!
